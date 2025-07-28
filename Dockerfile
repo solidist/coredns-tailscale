@@ -31,7 +31,6 @@ COPY Corefile /etc/coredns/
 RUN chown -R coredns:coredns /etc/coredns
 
 USER coredns
-EXPOSE 53/tcp 53/udp
 
 WORKDIR /etc/coredns
 ENTRYPOINT ["coredns"]
