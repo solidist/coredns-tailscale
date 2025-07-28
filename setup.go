@@ -4,6 +4,7 @@ import (
 	"github.com/coredns/caddy"
 	"github.com/coredns/coredns/core/dnsserver"
 	"github.com/coredns/coredns/plugin"
+	clog "github.com/coredns/coredns/plugin/pkg/log"
 )
 
 // init registers this plugin.
@@ -22,18 +23,12 @@ func setup(c *caddy.Controller) error {
 
 		for c.NextBlock() {
 			switch c.Val() {
-			case "authkey":
+			case "socket":
 				args := c.RemainingArgs()
 				if len(args) != 1 {
 					return plugin.Error("tailscale", c.ArgErr())
 				}
-				ts.authkey = args[0]
-			case "hostname":
-				args := c.RemainingArgs()
-				if len(args) != 1 {
-					return plugin.Error("tailscale", c.ArgErr())
-				}
-				ts.hostname = args[0]
+				ts.socketPath = args[0]
 			case "fallthrough":
 				ts.fall.SetZonesFromArgs(c.RemainingArgs())
 
@@ -47,7 +42,7 @@ func setup(c *caddy.Controller) error {
 	dnsserver.GetConfig(c).AddPlugin(func(next plugin.Handler) plugin.Handler {
 		ts.next = next
 		if err := ts.start(); err != nil {
-			log.Error(err)
+			clog.Error(err)
 			return nil
 		}
 		return ts

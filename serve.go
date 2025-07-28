@@ -99,7 +99,7 @@ func (t *Tailscale) handleNoRecords(ctx context.Context, w dns.ResponseWriter, r
 	}
 }
 
-func (t *Tailscale) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.Msg) (int, error) {
+func (t *Tailscale) ServeCoreDNS(ctx context.Context, w dns.ResponseWriter, r *dns.Msg) (int, error) {
 	log.Debugf("Received request for name: %v", r.Question[0].Name)
 	log.Debugf("Tailscale peers list has %d entries", len(t.entries))
 

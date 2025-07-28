@@ -14,23 +14,26 @@ import (
 )
 
 func newTS() Tailscale {
-
 	return Tailscale{
 		zone: "example.com",
 		entries: map[string]map[string][]string{
 			"test1": {
-				"A":    []string{"127.0.0.1"},
-				"AAAA": []string{"::1"},
+				"A":    []string{"100.64.0.1"},
+				"AAAA": []string{"fd7a:115c:a1e0::1"},
 			},
 			"test2-1": {
-				"A":    []string{"127.0.0.1"},
-				"AAAA": []string{"::1"},
+				"A":    []string{"100.64.0.2"},
+				"AAAA": []string{"fd7a:115c:a1e0::2"},
 			},
 			"test2-2": {
-				"A":    []string{"127.0.0.1"},
-				"AAAA": []string{"::1"},
+				"A":    []string{"100.64.0.3"},
+				"AAAA": []string{"fd7a:115c:a1e0::3"},
 			},
 			"test2": {
+				"A":    []string{"100.64.0.2", "100.64.0.3"},
+				"AAAA": []string{"fd7a:115c:a1e0::2", "fd7a:115c:a1e0::3"},
+			},
+			"web": {
 				"CNAME": []string{"test2-1.example.com", "test2-2.example.com"},
 			},
 		},
@@ -74,7 +77,7 @@ func TestServeDNSFallback(t *testing.T) {
 	if want, got := dns.RcodeSuccess, resp; got != want {
 		t.Fatalf("want response code %d, got %d", want, got)
 	}
-	if want, got := net.ParseIP("127.0.0.1"), w.Msg.Answer[0].(*dns.A).A; !got.Equal(want) {
+	if want, got := net.ParseIP("100.64.0.1"), w.Msg.Answer[0].(*dns.A).A; !got.Equal(want) {
 		t.Errorf("want %s, got: %s", want, got)
 	}
 
@@ -115,7 +118,7 @@ func TestServeDNSNoFallback(t *testing.T) {
 	if want, got := dns.RcodeSuccess, resp; got != want {
 		t.Fatalf("want response code %d, got %d", want, got)
 	}
-	if want, got := net.ParseIP("127.0.0.1"), w.Msg.Answer[0].(*dns.A).A; !got.Equal(want) {
+	if want, got := net.ParseIP("100.64.0.1"), w.Msg.Answer[0].(*dns.A).A; !got.Equal(want) {
 		t.Errorf("want %s, got: %s", want, got)
 	}
 
@@ -133,7 +136,7 @@ func TestResolveA(t *testing.T) {
 	testEquals(t, "query name", domain, msg.Answer[0].Header().Name)
 
 	if a, ok := msg.Answer[0].(*dns.A); ok {
-		testEquals(t, "A record", "127.0.0.1", a.A.String())
+		testEquals(t, "A record", "100.64.0.1", a.A.String())
 	} else {
 		t.Errorf("Expected AAAA return RR value type")
 	}
@@ -152,7 +155,7 @@ func TestResolveAAAA(t *testing.T) {
 	testEquals(t, "query name", domain, msg.Answer[0].Header().Name)
 
 	if a, ok := msg.Answer[0].(*dns.AAAA); ok {
-		testEquals(t, "A record", "::1", a.AAAA.String())
+		testEquals(t, "AAAA record", "fd7a:115c:a1e0::1", a.AAAA.String())
 	} else {
 		t.Errorf("Expected AAAA return RR value")
 	}
@@ -162,7 +165,7 @@ func TestResolveAAAA(t *testing.T) {
 func TestResolveCNAME(t *testing.T) {
 	ts := newTS()
 	msg := dns.Msg{}
-	domain := "test2.example.com"
+	domain := "web.example.com"
 
 	ts.resolveCNAME(domain, &msg, TypeAll)
 
@@ -190,15 +193,15 @@ func TestResolveCNAME(t *testing.T) {
 	sort.Strings(cnames)
 	sort.Strings(as)
 	testEquals(t, "CNAME record", []string{"test2-1.example.com", "test2-2.example.com"}, cnames)
-	testEquals(t, "A record", []string{"127.0.0.1", "127.0.0.1"}, as)
-	testEquals(t, "AAAA record", []string{"::1", "::1"}, aaaas)
+	testEquals(t, "A record", []string{"100.64.0.2", "100.64.0.3"}, as)
+	testEquals(t, "AAAA record", []string{"fd7a:115c:a1e0::2", "fd7a:115c:a1e0::3"}, aaaas)
 
 }
 
 func TestResolveAIsCNAME(t *testing.T) {
 	ts := newTS()
 	msg := dns.Msg{}
-	domain := "test2.example.com"
+	domain := "web.example.com"
 
 	ts.resolveA(domain, &msg)
 
@@ -223,13 +226,13 @@ func TestResolveAIsCNAME(t *testing.T) {
 	sort.Strings(cnames)
 	sort.Strings(as)
 	testEquals(t, "CNAME record", []string{"test2-1.example.com", "test2-2.example.com"}, cnames)
-	testEquals(t, "A record", []string{"127.0.0.1", "127.0.0.1"}, as)
+	testEquals(t, "A record", []string{"100.64.0.2", "100.64.0.3"}, as)
 }
 
 func TestResolveAAAAIsCNAME(t *testing.T) {
 	ts := newTS()
 	msg := dns.Msg{}
-	domain := "test2.example.com"
+	domain := "web.example.com"
 
 	ts.resolveAAAA(domain, &msg)
 
@@ -254,7 +257,47 @@ func TestResolveAAAAIsCNAME(t *testing.T) {
 	sort.Strings(cnames)
 	sort.Strings(aaaas)
 	testEquals(t, "CNAME record", []string{"test2-1.example.com", "test2-2.example.com"}, cnames)
-	testEquals(t, "AAAA record", []string{"::1", "::1"}, aaaas)
+	testEquals(t, "AAAA record", []string{"fd7a:115c:a1e0::2", "fd7a:115c:a1e0::3"}, aaaas)
+}
+
+func TestResolveRoundRobinA(t *testing.T) {
+	ts := newTS()
+	msg := dns.Msg{}
+	domain := "test2.example.com"
+
+	ts.resolveA(domain, &msg)
+
+	testEquals(t, "answer count", 2, len(msg.Answer))
+
+	var as []string
+	for _, rr := range msg.Answer {
+		if a, ok := rr.(*dns.A); ok {
+			as = append(as, a.A.String())
+		}
+	}
+
+	sort.Strings(as)
+	testEquals(t, "A records", []string{"100.64.0.2", "100.64.0.3"}, as)
+}
+
+func TestResolveRoundRobinAAAA(t *testing.T) {
+	ts := newTS()
+	msg := dns.Msg{}
+	domain := "test2.example.com"
+
+	ts.resolveAAAA(domain, &msg)
+
+	testEquals(t, "answer count", 2, len(msg.Answer))
+
+	var aaaas []string
+	for _, rr := range msg.Answer {
+		if aaaa, ok := rr.(*dns.AAAA); ok {
+			aaaas = append(aaaas, aaaa.AAAA.String())
+		}
+	}
+
+	sort.Strings(aaaas)
+	testEquals(t, "AAAA records", []string{"fd7a:115c:a1e0::2", "fd7a:115c:a1e0::3"}, aaaas)
 }
 
 func testEquals(t *testing.T, msg string, expected interface{}, received interface{}) {

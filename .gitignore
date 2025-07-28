@@ -1,2 +1,29 @@
 coredns-tailscale
 Corefile-murf.dev
+
+# Environment files
+.env
+.env.*
+*.env
+
+# Auth keys and secrets
+*.key
+*.pem
+*.p12
+*.pfx
+auth_key
+authkey
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp

@@ -1,0 +1,9 @@
+example.com {
+    bind 10.53.53.53
+    tailscale example.com {
+        socket /tmp/tailscale/tailscaled.sock
+        fallthrough
+    }
+    log
+    errors
+}
