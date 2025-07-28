@@ -15,7 +15,7 @@ services:
 
   tailscale:
     image: tailscale/tailscale:latest
-    hostname: coredns-dns
+    hostname: coredns
     environment:
       - TS_AUTHKEY=${TS_AUTH_KEY__COREDNS}
       - TS_STATE_DIR=/var/lib/tailscale

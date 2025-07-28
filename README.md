@@ -97,7 +97,7 @@ services:
 
   tailscale:
     image: tailscale/tailscale:latest
-    hostname: coredns-dns
+    hostname: coredns
     environment:
       - TS_AUTHKEY=${TS_AUTH_KEY__COREDNS}
       - TS_STATE_DIR=/var/lib/tailscale
@@ -188,7 +188,7 @@ When Tailscale nodes have similar hostnames with numerical suffixes (e.g., `web-
 **Individual node records:**
 ```
 web-1.nodes.example.com.  IN A 100.64.0.1
-web-2.nodes.example.com.  IN A 100.64.0.2  
+web-2.nodes.example.com.  IN A 100.64.0.2
 web-3.nodes.example.com.  IN A 100.64.0.3
 ```
 
