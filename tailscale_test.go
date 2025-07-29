@@ -18,7 +18,7 @@ func TestProcessNetMap(t *testing.T) {
 			netip.MustParsePrefix("100.64.0.1/32"),
 			netip.MustParsePrefix("fd7a:115c:a1e0::1/128"),
 		},
-		Tags: []string{"tag:cname-app"},
+		Tags: []string{"tag:dns-cname-app"},
 	}).View()
 
 	nm := &netmap.NetworkMap{
@@ -30,7 +30,7 @@ func TestProcessNetMap(t *testing.T) {
 					netip.MustParsePrefix("100.64.0.2/32"),
 					netip.MustParsePrefix("fd7a:115c:a1e0::2/128"),
 				},
-				Tags: []string{"tag:cname-app"},
+				Tags: []string{"tag:dns-cname-app"},
 			}).View(),
 			(&tailcfg.Node{
 				// shared node should be excluded
@@ -40,7 +40,7 @@ func TestProcessNetMap(t *testing.T) {
 					netip.MustParsePrefix("100.64.0.3/32"),
 					netip.MustParsePrefix("fd7a:115c:a1e0::3/128"),
 				},
-				Tags: []string{"tag:cname-app"},
+				Tags: []string{"tag:dns-cname-app"},
 			}).View(),
 			(&tailcfg.Node{
 				// mullvad exit node should be excluded
@@ -50,7 +50,7 @@ func TestProcessNetMap(t *testing.T) {
 					netip.MustParsePrefix("100.64.0.4/32"),
 					netip.MustParsePrefix("fd7a:115c:a1e0::4/128"),
 				},
-				Tags: []string{"tag:cname-app"},
+				Tags: []string{"tag:dns-cname-app"},
 			}).View(),
 		},
 	}

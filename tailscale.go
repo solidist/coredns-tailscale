@@ -54,21 +54,21 @@ func (t *Tailscale) start() error {
 	if t.socketPath == "" {
 		t.socketPath = DefaultSocketPath
 	}
-	
+
 	// Check if socket exists
 	if _, err := os.Stat(t.socketPath); os.IsNotExist(err) {
 		clog.Warningf("Tailscale socket not found at %s, will retry", t.socketPath)
 	}
-	
+
 	// Create LocalClient that connects to the socket
 	t.lc = &tailscale.LocalClient{
 		Socket: t.socketPath,
 	}
 
 	go t.watchIPNBus()
-	
+
 	clog.Infof("Tailscale plugin connected to socket: %s", t.socketPath)
-	
+
 	return nil
 }
 
@@ -118,7 +118,7 @@ func (t *Tailscale) processNetMap(nm *netmap.NetworkMap) {
 		}
 
 		hostname := node.ComputedName()
-		
+
 		// Ensure we have a map for this hostname
 		if _, ok := entries[hostname]; !ok {
 			entries[hostname] = make(map[string][]string)
@@ -143,7 +143,7 @@ func (t *Tailscale) processNetMap(nm *netmap.NetworkMap) {
 		if matches := re.FindStringSubmatch(hostname); matches != nil {
 			hostnameWithoutSuffix = matches[1]
 		}
-		
+
 		// Only create grouped entry if it's different from the original hostname
 		if hostnameWithoutSuffix != hostname {
 			// Ensure we have a map for this grouped hostname
@@ -161,10 +161,10 @@ func (t *Tailscale) processNetMap(nm *netmap.NetworkMap) {
 			}
 		}
 
-		// Process Tags looking for cname- prefixed ones
+		// Process Tags looking for dns-cname- prefixed ones
 		if node.Tags().Len() > 0 {
 			for _, raw := range node.Tags().AsSlice() {
-				if tag, ok := strings.CutPrefix(raw, "tag:cname-"); ok {
+				if tag, ok := strings.CutPrefix(raw, "tag:dns-cname-"); ok {
 					if _, ok := entries[tag]; !ok {
 						entries[tag] = map[string][]string{}
 					}
@@ -179,8 +179,3 @@ func (t *Tailscale) processNetMap(nm *netmap.NetworkMap) {
 	t.mu.Unlock()
 	clog.Debugf("updated %d Tailscale entries", len(entries))
 }
-
-
-
-
-

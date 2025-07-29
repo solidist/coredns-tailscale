@@ -214,9 +214,10 @@ test-machine.nodes.example.com. IN AAAA fd7a:115c:a1e0::1
 CNAME records via Tags
 ---------------------
 
-A CNAME record can be added to point to a machine by simply creating a Tailscale machine tag prefixed by `cname-`. Any text in the tag after that prefix will be used to generate the resulting CNAME entry, so for example, the tag `cname-friendly-name` on a machine named `test-machine` will result in the following DNS records:
+A CNAME record can be added to point to a machine by simply creating a Tailscale machine tag prefixed by `dns-cname-`. Any text in the tag after that prefix will be used to generate the resulting CNAME entry, so for example, the tag `dns-cname-friendly-name` on a machine named `test-machine` will result in the following DNS records:
 
 ```
+*.friendly-name IN CNAME test-machine.nodes.example.com.
 friendly-name IN CNAME test-machine.nodes.example.com.
 test-machine  IN A <Tailscale IPv4 Address>
 test-machine  IN AAAA <Tailscale IPv6 Address>

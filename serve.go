@@ -64,25 +64,32 @@ func (t *Tailscale) resolveAAAA(domainName string, msg *dns.Msg) {
 
 func (t *Tailscale) resolveCNAME(domainName string, msg *dns.Msg, lookupType int) {
 
-	name := strings.Split(domainName, ".")[0]
-	targets, ok := t.entries[name]["CNAME"]
-	if ok {
-		log.Debugf("Found a CNAME entry after lookup for: %s", name)
-		for _, target := range targets {
-			msg.Answer = append(msg.Answer, &dns.CNAME{
-				Hdr:    dns.RR_Header{Name: domainName, Rrtype: dns.TypeCNAME, Class: dns.ClassINET, Ttl: 60},
-				Target: target,
-			})
+	// Try direct CNAME lookup first, then wildcard
+	lookupNames := []string{strings.Split(domainName, ".")[0]}
+	
+	// Add wildcard lookup if domain has multiple parts
+	parts := strings.Split(domainName, ".")
+	if len(parts) >= 3 {
+		lookupNames = append(lookupNames, parts[1])
+	}
+	
+	for _, lookupName := range lookupNames {
+		if targets, ok := t.entries[lookupName]["CNAME"]; ok {
+			for _, target := range targets {
+				msg.Answer = append(msg.Answer, &dns.CNAME{
+					Hdr:    dns.RR_Header{Name: domainName, Rrtype: dns.TypeCNAME, Class: dns.ClassINET, Ttl: 60},
+					Target: target,
+				})
 
-			// Resolve local zone A or AAAA records if they exist for the referenced target
-			if lookupType == TypeAll || lookupType == TypeA {
-				log.Debug("CNAME record found, lookup up local recursive A")
-				t.resolveA(target, msg)
+				// Resolve local zone A or AAAA records if they exist for the referenced target
+				if lookupType == TypeAll || lookupType == TypeA {
+					t.resolveA(target, msg)
+				}
+				if lookupType == TypeAll || lookupType == TypeAAAA {
+					t.resolveAAAA(target, msg)
+				}
 			}
-			if lookupType == TypeAll || lookupType == TypeAAAA {
-				log.Debug("CNAME record found, lookup up local recursive AAAA")
-				t.resolveAAAA(target, msg)
-			}
+			return // Found CNAME, stop looking
 		}
 	}
 
