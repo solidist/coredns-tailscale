@@ -3,6 +3,8 @@ coredns-tailscale
 
 A CoreDNS plugin implementation for Tailscale networks that integrates with Tailscale via socket communication.
 
+<img width="935" height="934" alt="example-com" src="https://github.com/user-attachments/assets/0b4d0388-ebb4-499b-8558-138c54742c8e" />
+
 Rationale
 ---------
 
