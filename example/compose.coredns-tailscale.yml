@@ -9,6 +9,7 @@ services:
     networks:
       coredns_net:
         ipv4_address: 10.53.53.53
+      bridge: {}
     restart: unless-stopped
     depends_on:
       - tailscale
@@ -34,6 +35,7 @@ services:
     networks:
       coredns_net:
         ipv4_address: 10.53.53.2
+      bridge: {}
     restart: unless-stopped
 
 networks:
@@ -42,6 +44,7 @@ networks:
     ipam:
       config:
         - subnet: 10.53.53.0/24
+  bridge: {}
 
 volumes:
   tailscale-state:

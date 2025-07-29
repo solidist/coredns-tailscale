@@ -268,11 +268,10 @@ To configure Tailscale to use your CoreDNS server for specific domains:
 2. **Configure nameservers** in the [Tailscale DNS settings](https://login.tailscale.com/admin/dns):
    - Navigate to the "Nameservers" section
    - Click "Add nameserver"
-   - Enter 10.53.53.53 as the nameserver. Don't enable `Restrict to domain` or `Split DNS`. It wasn't reliable enough. DNS resolution works for some clients but not all.
-   - In the Global nameservers, enable `Override DNS servers`
+   - Enter 10.53.53.53 as the nameserver. Don't enable `Restrict to domain` for your domain (e.g. `example.com`).
 
 3. **Verify the configuration**:
-   - The nameserver entries should show "Global nameserver".
+   - The nameserver entries should show `example.com` `Split DNS`.
    - Test from any Tailscale client:
      ```bash
      dig coredns.nodes.example.com
